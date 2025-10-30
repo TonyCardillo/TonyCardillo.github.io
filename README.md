@@ -2,33 +2,49 @@
 
 My personal website built with a simple Node.js static site generator and the Everforest theme.
 
-## Writing Blog Posts
+## Commands
 
-1. Create a new Markdown file in `blog/posts/`:
+- `./deploy.sh` - Deploys to GitHub Pages with pre-deployment validation
 
-   ```markdown
-   ---
-   title: 'Your Post Title'
-   date: '2025-01-27'
-   excerpt: 'Brief description of your post'
-   ---
+## Architecture
 
-   # Your Post Title
+- Custom Node.js static site generator. The architecture is:
+- CSS: Single stylesheet at `css/style.css` using custom theme
+- HTML structure defined in `build.js` template functions
+- Static pages from said template functions
 
-   Your content here...
-   ```
+**Static Site Generator (build.js):**
 
-2. Run the build command:
+- Reads Markdown files from `blog/posts/` with frontmatter (title, date, excerpt)
+- Outputs HTML blog posts to `blog/` directory and static pages to root directory
 
-   ```bash
-   npm run build
-   ```
+**Build Process:**
 
-3. Commit and push to deploy via GitHub Pages.
+- All HTML files are generated and overwritten on each build
+- Blog index page lists all posts sorted by date (newest first)
+- Individual blog post pages include navigation back to blog index
+- Static pages (index.html, about.html, projects.html) are regenerated each build
 
-## Structure
+**Quality:**
 
-- `blog/posts/` - Markdown blog posts
-- `css/style.css` - Everforest theme styles
-- `build.js` - Static site generator
-- Generated HTML files are created in the root and `blog/` directories
+- Husky pre-commit hooks automatically run `npm run validate` before each commit
+- ESLint/Prettier ensure code quality and formatting
+- Stylelint maintains CSS standards
+- Gitleaks prevents credential leaks
+- Deploy script validates everything before pushing to GitHub
+
+## Blog Post Format
+
+New blog posts require this frontmatter structure:
+
+```markdown
+---
+title: 'Post Title'
+date: 'YYYY-MM-DD'
+excerpt: 'Brief description'
+---
+
+# Post Title
+
+Content here...
+```
