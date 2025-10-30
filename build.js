@@ -134,7 +134,7 @@ function generateBlogPost(post) {
 function generateHomePage() {
   const content = `
     <section class="hero">
-      <h1>Tony Cardillo</h1>
+      <h1>Anthony Cardillo</h1>
       <p>Welcome to my personal website</p>
       <p>Technology • Medicine • Innovation</p>
     </section>
