@@ -1,0 +1,36 @@
+{
+  "name": "entmoot-io",
+  "version": "1.0.0",
+  "description": "Personal website for entmoot.io",
+  "main": "build.js",
+  "scripts": {
+    "build": "node build.js",
+    "lint": "eslint . --fix",
+    "format": "prettier --write .",
+    "lint:css": "stylelint 'css/**/*.css' --fix",
+    "validate": "npm run lint && npm run format && npm run lint:css && npm run security && npm run build",
+    "security": "gitleaks detect --config .gitleaks.toml --verbose",
+    "prepare": "husky install"
+  },
+  "dependencies": {
+    "marked": "^12.0.0",
+    "gray-matter": "^4.0.3"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "@eslint/js": "^8.57.0",
+    "prettier": "^3.2.5",
+    "stylelint": "^16.2.1",
+    "stylelint-config-standard": "^36.0.0",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.2"
+  },
+  "keywords": [
+    "personal",
+    "website",
+    "blog",
+    "markdown"
+  ],
+  "author": "Tony Cardillo",
+  "license": "MIT"
+}

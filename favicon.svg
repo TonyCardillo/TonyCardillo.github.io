@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#B8FF00;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#9BCF00;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="1" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="32" height="32" fill="#0A0A0A" rx="6"/>
+
+  <!-- Glowing "e" for entmoot -->
+  <text x="16" y="24"
+        font-family="Arial, sans-serif"
+        font-size="22"
+        font-weight="900"
+        text-anchor="middle"
+        fill="url(#greenGrad)"
+        filter="url(#glow)">e</text>
+</svg>
