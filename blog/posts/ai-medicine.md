@@ -4,8 +4,6 @@ date: '2025-01-27'
 excerpt: 'How artificial intelligence is transforming healthcare delivery and patient outcomes'
 ---
 
-# AI's Impact on Modern Medicine
-
 Artificial intelligence is revolutionizing healthcare in ways we couldn't have imagined a decade ago.
 
 ## Current Applications

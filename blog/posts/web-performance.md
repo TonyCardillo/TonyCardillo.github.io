@@ -4,8 +4,6 @@ date: '2025-01-29'
 excerpt: 'Practical techniques for building lightning-fast web applications'
 ---
 
-# Web Performance Optimization Strategies
-
 Performance is not just a technical concern—it's a user experience imperative. Every millisecond counts.
 
 ## Key Metrics

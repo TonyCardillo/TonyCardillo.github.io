@@ -4,8 +4,6 @@ date: '2025-01-28'
 excerpt: 'Exploring the principles behind creating cohesive design languages for web applications'
 ---
 
-# Building Modern Design Systems
-
 Design systems are the foundation of consistent, scalable user interfaces. In this post, I explore the key principles behind effective design systems.
 
 ## Core Principles
