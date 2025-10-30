@@ -227,8 +227,11 @@ nav {
 
 nav ul {
   display: flex;
+  align-items: center;
   list-style: none;
   gap: var(--space-8);
+  margin: 0;
+  padding: 0;
 }
 
 nav a {
