@@ -1,0 +1,24 @@
+# Gitleaks configuration for secrets detection
+
+[extend]
+# path = ""
+# useDefault = true
+
+[[rules]]
+id = "generic-api-key"
+description = "Generic API Key"
+regex = '''(?i)(api|key|token|secret|password)\s*[=:]\s*['"]\w{20,}['"]'''
+keywords = ["api", "key", "token", "secret", "password"]
+
+[[rules]]
+id = "email-password"
+description = "Email and password in same file"
+regex = '''(?i)(email|username).*password'''
+keywords = ["email", "username", "password"]
+
+[allowlist]
+description = "Allowlist"
+paths = [
+    "node_modules/",
+    ".git/",
+]

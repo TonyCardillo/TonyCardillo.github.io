@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PathCal — Quick Monitor Check</title>
+<style>
+  :root {
+    --bg: #1a1a2e;
+    --surface: #16213e;
+    --accent: #0f3460;
+    --text: #e0e0e0;
+    --highlight: #53a8b6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  .nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: var(--surface);
+    border-bottom: 1px solid #2a2a4a;
+    display: flex;
+    align-items: center;
+    padding: 0 1.5rem;
+    height: 56px;
+    gap: 0.5rem;
+  }
+
+  .nav-title {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-right: 1.5rem;
+    white-space: nowrap;
+    color: var(--highlight);
+  }
+
+  .nav .mode-label {
+    font-size: 0.85rem;
+    color: #999;
+    margin-right: auto;
+  }
+
+  .nav .mode-label strong { color: #fff; }
+
+  .nav a {
+    font-size: 0.85rem;
+    color: var(--text);
+    text-decoration: none;
+    padding: 0.4rem 0.8rem;
+    border: 1px solid #2a2a4a;
+    border-radius: 6px;
+    transition: all 0.15s;
+  }
+
+  .nav a:hover { border-color: var(--highlight); background: var(--accent); }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    padding-top: 72px;
+  }
+
+  .start-screen {
+    text-align: center;
+    padding: 4rem 1rem;
+  }
+
+  .start-screen h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 0.8rem;
+    color: #fff;
+  }
+
+  .start-screen p {
+    font-size: 1.2rem;
+    color: #aaa;
+    margin-bottom: 2.5rem;
+    line-height: 1.5;
+  }
+
+  .start-btn {
+    font-size: 1.4rem;
+    padding: 1rem 3rem;
+    background: var(--accent);
+    color: #fff;
+    border: 2px solid var(--highlight);
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.15s;
+  }
+
+  .start-btn:hover { background: var(--highlight); }
+
+  .step { display: none; }
+  .step.active { display: block; }
+
+  .progress-bar {
+    background: #2a2a4a;
+    height: 8px;
+    border-radius: 4px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--highlight);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+  }
+
+  .step-count {
+    font-size: 1rem;
+    color: #777;
+    margin-bottom: 0.5rem;
+  }
+
+  .step h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 1rem;
+  }
+
+  .step .instruction {
+    font-size: 1.15rem;
+    color: #bbb;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+  }
+
+  .step .instruction strong { color: var(--highlight); }
+
+  .test-area {
+    background: var(--surface);
+    border: 1px solid #2a2a4a;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .answer-row {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+  }
+
+  .btn-yes, .btn-no, .btn-next {
+    font-size: 1.3rem;
+    padding: 1rem 2.5rem;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    min-width: 160px;
+    transition: all 0.15s;
+  }
+
+  .btn-yes {
+    background: #16a34a;
+    color: #fff;
+  }
+  .btn-yes:hover { background: #15803d; }
+
+  .btn-no {
+    background: #dc2626;
+    color: #fff;
+  }
+  .btn-no:hover { background: #b91c1c; }
+
+  .btn-next {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--highlight);
+    display: none;
+  }
+  .btn-next:hover { background: var(--highlight); }
+
+  .btn-back {
+    font-size: 1rem;
+    padding: 0.6rem 1.5rem;
+    background: transparent;
+    color: #777;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .btn-back:hover { border-color: var(--highlight); color: var(--text); }
+
+  .feedback {
+    display: none;
+    padding: 1rem 1.2rem;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    line-height: 1.5;
+    margin-top: 1rem;
+  }
+
+  .feedback.fail {
+    background: rgba(220, 38, 38, 0.15);
+    border: 1px solid #dc2626;
+    color: #fca5a5;
+  }
+
+  .fix-tip {
+    margin-top: 0.8rem;
+    padding: 0.8rem 1rem;
+    background: rgba(234, 88, 12, 0.1);
+    border: 1px solid #ea580c;
+    border-radius: 8px;
+    color: #fdba74;
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+
+  .fix-tip strong { color: #fb923c; }
+
+  .fix-tip .tip-steps {
+    margin: 0.5rem 0 0 1.2rem;
+    padding: 0;
+  }
+
+  .fix-tip .tip-steps li {
+    margin-bottom: 0.3rem;
+  }
+
+  .fix-tip .recheck-btn {
+    display: inline-block;
+    margin-top: 0.6rem;
+    padding: 0.5rem 1.2rem;
+    background: #ea580c;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .fix-tip .recheck-btn:hover { background: #c2410c; }
+
+  .simple-gray-strip {
+    display: flex;
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .simple-gray-strip div {
+    flex: 1;
+    height: 90px;
+  }
+
+  .lc-row {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+  }
+
+  .lc-box {
+    width: 140px;
+    height: 140px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .lc-box .dot {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+  }
+
+  .discrim-row {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .discrim-box {
+    width: 120px;
+    height: 120px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .discrim-box .dot {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+  }
+
+  .discrim-label {
+    font-size: 0.8rem;
+    color: #999;
+    text-align: center;
+    margin-top: 0.3rem;
+  }
+
+  .sharp-canvas {
+    display: block;
+    margin: 0 auto;
+  }
+
+  .results {
+    text-align: center;
+    padding: 2rem 0;
+  }
+
+  .results h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #fff;
+  }
+
+  .results-list {
+    list-style: none;
+    text-align: left;
+    max-width: 500px;
+    margin: 1.5rem auto;
+    font-size: 1.15rem;
+  }
+
+  .results-list li {
+    padding: 0.7rem 0;
+    border-bottom: 1px solid #2a2a4a;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .results-list .icon {
+    font-size: 1.4rem;
+    width: 32px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .result-summary {
+    font-size: 1.3rem;
+    font-weight: 700;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin: 1.5rem auto;
+    max-width: 500px;
+  }
+
+  .result-summary.all-pass {
+    background: rgba(22, 163, 74, 0.15);
+    border: 1px solid #16a34a;
+    color: #4ade80;
+  }
+
+  .result-summary.has-fail {
+    background: rgba(220, 38, 38, 0.15);
+    border: 1px solid #dc2626;
+    color: #fca5a5;
+  }
+
+  .result-meta {
+    color: #777;
+    font-size: 0.95rem;
+    margin-top: 1.5rem;
+  }
+
+  .results .btn-row {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+  }
+
+  .print-btn {
+    font-size: 1.1rem;
+    padding: 0.8rem 2rem;
+    background: var(--accent);
+    color: #fff;
+    border: 1px solid var(--highlight);
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .print-btn:hover { background: var(--highlight); }
+
+  .restart-btn {
+    font-size: 1.1rem;
+    padding: 0.8rem 2rem;
+    background: transparent;
+    color: var(--text);
+    border: 1px solid #2a2a4a;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .restart-btn:hover { border-color: var(--highlight); }
+
+  .app-credit {
+    text-align: center;
+    font-size: 0.75rem;
+    color: #555;
+    padding: 2rem 1rem 1rem;
+    letter-spacing: 0.02em;
+  }
+
+  @media print {
+    .nav, .btn-yes, .btn-no, .btn-next, .btn-back, .start-btn, .print-btn, .restart-btn { display: none !important; }
+    .app-credit { color: #999; }
+    .step { display: none !important; }
+    .start-screen { display: none !important; }
+    .results { display: block !important; }
+    .results-list li { font-size: 1rem; }
+    body { background: #fff; color: #000; }
+    .results h2 { color: #000; }
+    .result-summary.all-pass { color: #166534; background: #f0fdf4; border-color: #86efac; }
+    .result-summary.has-fail { color: #991b1b; background: #fef2f2; border-color: #fca5a5; }
+    .results-list li { border-color: #eee; }
+    .container { padding-top: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-title">PathCal</div>
+  <span class="mode-label"><strong>Quick Check</strong></span>
+  <a href="advanced.html">Advanced Tools</a>
+</nav>
+
+<div class="container">
+
+  <div class="start-screen" id="start-screen">
+    <h1>Quick Monitor Check</h1>
+    <p>4 quick tests to make sure your screen<br>is ready for digital sign-out.</p>
+    <p style="font-size:0.95rem; color:#777;">Takes about 1 minute.</p>
+    <button type="button" class="start-btn" onclick="begin()">Start</button>
+    <div class="app-credit">Created by Anthony Cardillo, MD</div>
+  </div>
+
+  <div id="wizard" style="display:none;">
+    <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+
+    <div class="step" id="step-0">
+      <div class="step-count">Step 1 of 4</div>
+      <h2>Brightness &amp; Contrast</h2>
+      <p class="instruction">Can you see <strong>every stripe</strong> below as a separate shade?<br>Pay close attention to the very darkest and very lightest ones.</p>
+      <div class="test-area">
+        <div class="simple-gray-strip" id="gray-strip"></div>
+      </div>
+      <div class="answer-row" id="btns-0">
+        <button type="button" class="btn-yes" onclick="answer(0, true)">Yes, I see them all</button>
+        <button type="button" class="btn-no" onclick="answer(0, false)">Some look the same</button>
+      </div>
+      <div class="feedback fail" id="fb-0-fail">
+        The dark or light end of the strip is blending together.
+        <div class="fix-tip">
+          <strong>How to fix:</strong>
+          <ol class="tip-steps">
+            <li>Look for a physical button or joystick on the bottom or side edge of your monitor</li>
+            <li>Open the on-screen menu and find <strong>Brightness</strong> &mdash; set it to about <strong>75&ndash;80%</strong></li>
+            <li>Find <strong>Contrast</strong> &mdash; set it to about <strong>70&ndash;80%</strong></li>
+            <li>If the dark stripes merge: raise <strong>Brightness</strong></li>
+            <li>If the light stripes merge: lower <strong>Brightness</strong> or raise <strong>Contrast</strong></li>
+          </ol>
+          <button type="button" class="recheck-btn" onclick="recheck(0)">I adjusted it &mdash; let me look again</button>
+        </div>
+      </div>
+      <div class="answer-row" style="margin-top:1rem;">
+        <button type="button" class="btn-next" id="next-0" onclick="goNext(1)">Next</button>
+      </div>
+    </div>
+
+    <div class="step" id="step-1">
+      <div class="step-count">Step 2 of 4</div>
+      <h2>Subtle Differences</h2>
+      <p class="instruction">Each gray square below has a <strong>circle</strong> inside it.<br>Can you see <strong>all four</strong> circles?</p>
+      <div class="test-area">
+        <!-- Pre-computed pairs: each circle is 3 ΔE00 (CIEDE2000) from its background -->
+        <div class="lc-row">
+          <div class="lc-box" style="background:rgb(20,20,20);"><div class="dot" style="background:rgb(30,30,30);"></div></div>
+          <div class="lc-box" style="background:rgb(80,80,80);"><div class="dot" style="background:rgb(89,89,89);"></div></div>
+          <div class="lc-box" style="background:rgb(180,180,180);"><div class="dot" style="background:rgb(191,191,191);"></div></div>
+          <div class="lc-box" style="background:rgb(235,235,235);"><div class="dot" style="background:rgb(249,249,249);"></div></div>
+        </div>
+      </div>
+      <div class="answer-row" id="btns-1">
+        <button type="button" class="btn-yes" onclick="answer(1, true)">Yes, I see all 4</button>
+        <button type="button" class="btn-no" onclick="answer(1, false)">I can't see some</button>
+      </div>
+      <div class="feedback fail" id="fb-1-fail">
+        You may miss subtle findings on slides.
+        <div class="fix-tip">
+          <strong>How to fix:</strong>
+          <ol class="tip-steps">
+            <li>On your monitor's on-screen menu, increase <strong>Contrast</strong> to <strong>80&ndash;90%</strong></li>
+            <li>If available, set the display <strong>Gamma</strong> to <strong>2.2</strong></li>
+            <li>Make sure no "Eco" or "Dynamic Contrast" mode is turned on &mdash; these reduce contrast</li>
+            <li>If the dark-background circles are hardest to see, try raising <strong>Brightness</strong> slightly</li>
+          </ol>
+          <button type="button" class="recheck-btn" onclick="recheck(1)">I adjusted it &mdash; let me look again</button>
+        </div>
+      </div>
+      <div class="answer-row" style="margin-top:1rem;">
+        <button type="button" class="btn-back" onclick="goNext(0)">Back</button>
+        <button type="button" class="btn-next" id="next-1" onclick="goNext(2)">Next</button>
+      </div>
+    </div>
+
+    <div class="step" id="step-2">
+      <div class="step-count">Step 3 of 4</div>
+      <h2>Color Discrimination</h2>
+      <p class="instruction">Each colored square has a <strong>circle</strong> inside it that is very slightly different.<br>Can you see the circle in <strong>every</strong> square?</p>
+      <div class="test-area">
+        <!-- Pre-computed pairs: each circle is 3 ΔE00 (CIEDE2000) from its background -->
+        <div class="discrim-row">
+          <div>
+            <div class="discrim-box" style="background:#5F58A4;"><div class="dot" style="background:#6760AD;"></div></div>
+            <div class="discrim-label">Hematoxylin</div>
+          </div>
+          <div>
+            <div class="discrim-box" style="background:#E8A0B0;"><div class="dot" style="background:#F4ABBB;"></div></div>
+            <div class="discrim-label">Eosin</div>
+          </div>
+          <div>
+            <div class="discrim-box" style="background:#A76D4E;"><div class="dot" style="background:#AF7555;"></div></div>
+            <div class="discrim-label">DAB</div>
+          </div>
+          <div>
+            <div class="discrim-box" style="background:#C9257C;"><div class="dot" style="background:#D23184;"></div></div>
+            <div class="discrim-label">PAS</div>
+          </div>
+          <div>
+            <div class="discrim-box" style="background:#20A060;"><div class="dot" style="background:#2EA968;"></div></div>
+            <div class="discrim-label">Trichrome</div>
+          </div>
+        </div>
+      </div>
+      <div class="answer-row" id="btns-2">
+        <button type="button" class="btn-yes" onclick="answer(2, true)">Yes, I see all 5 circles</button>
+        <button type="button" class="btn-no" onclick="answer(2, false)">I can't see some</button>
+      </div>
+      <div class="feedback fail" id="fb-2-fail">
+        Your monitor may not be rendering subtle color differences accurately. Each pair differs by 3 &Delta;E00 (CIEDE2000, per POUQA methodology).
+        <div class="fix-tip">
+          <strong>How to fix:</strong>
+          <ol class="tip-steps">
+            <li>On your monitor's on-screen menu, look for <strong>Color Temperature</strong> or <strong>Color Mode</strong></li>
+            <li>Set it to <strong>sRGB</strong> if available, or <strong>6500K</strong> (sometimes labeled "Normal" or "Standard")</li>
+            <li>Turn off any "Vivid", "Dynamic", or "Eco" color mode &mdash; use <strong>Standard</strong></li>
+            <li>Make sure <strong>Saturation</strong> is near its default (usually 50%)</li>
+            <li>If colors still look identical, right-click your desktop &rarr; <strong>Display Settings</strong> &rarr; check that <strong>Color Profile</strong> is set to sRGB</li>
+          </ol>
+          <button type="button" class="recheck-btn" onclick="recheck(2)">I adjusted it &mdash; let me look again</button>
+        </div>
+      </div>
+      <div class="answer-row" style="margin-top:1rem;">
+        <button type="button" class="btn-back" onclick="goNext(1)">Back</button>
+        <button type="button" class="btn-next" id="next-2" onclick="goNext(3)">Next</button>
+      </div>
+    </div>
+
+    <div class="step" id="step-3">
+      <div class="step-count">Step 4 of 4</div>
+      <h2>Sharpness</h2>
+      <p class="instruction">Look at the black and white lines below.<br>Can you see them as <strong>separate, crisp lines</strong> &mdash; not blurred or merged together?</p>
+      <div class="test-area">
+        <canvas id="simple-sharp" class="sharp-canvas" width="600" height="160"></canvas>
+      </div>
+      <div class="answer-row" id="btns-3">
+        <button type="button" class="btn-yes" onclick="answer(3, true)">Yes, lines are sharp</button>
+        <button type="button" class="btn-no" onclick="answer(3, false)">They look blurry</button>
+      </div>
+      <div class="feedback fail" id="fb-3-fail">
+        Text and cell details may look fuzzy.
+        <div class="fix-tip">
+          <strong>How to fix:</strong>
+          <ol class="tip-steps">
+            <li>Right-click your desktop &rarr; <strong>Display Settings</strong></li>
+            <li>Set <strong>Resolution</strong> to the highest option (your monitor's native resolution)</li>
+            <li>Set <strong>Scale</strong> to <strong>100%</strong> (if text is too small at 100%, try 125% &mdash; but 100% is sharpest)</li>
+            <li>If using a dock or adapter, make sure the cable supports your full resolution (use DisplayPort or the cable that came with the monitor)</li>
+            <li>On your monitor menu, turn off any <strong>Sharpness</strong> enhancement (set to 0 or default)</li>
+          </ol>
+          <button type="button" class="recheck-btn" onclick="recheck(3)">I adjusted it &mdash; let me look again</button>
+        </div>
+      </div>
+      <div class="answer-row" style="margin-top:1rem;">
+        <button type="button" class="btn-back" onclick="goNext(2)">Back</button>
+        <button type="button" class="btn-next" id="next-3" onclick="showResults()">Finish</button>
+      </div>
+    </div>
+
+    <div id="results-screen" style="display:none;">
+      <div class="results">
+        <h2>Monitor Check Complete</h2>
+        <div class="result-summary" id="result-summary"></div>
+        <ul class="results-list" id="results-list"></ul>
+        <div class="result-meta" id="result-meta"></div>
+        <div class="btn-row">
+          <button type="button" class="print-btn" onclick="window.print()">Print Results</button>
+          <button type="button" class="restart-btn" onclick="restart()">Start Over</button>
+        </div>
+        <p style="margin-top:1.5rem;"><a href="advanced.html" style="color:var(--highlight); font-size:0.9rem;">Need more detail? Run advanced tests</a></p>
+      </div>
+    </div>
+
+  </div><!-- wizard -->
+
+</div><!-- container -->
+
+<script>
+const STEPS = [
+  'Brightness & Contrast',
+  'Subtle Differences',
+  'Color Discrimination',
+  'Sharpness',
+];
+
+const results = [null, null, null, null];
+
+function begin() {
+  document.getElementById('start-screen').style.display = 'none';
+  document.getElementById('wizard').style.display = 'block';
+  goNext(0);
+  drawSimpleSharpness();
+}
+
+function goNext(step) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step-' + step).classList.add('active');
+  document.getElementById('results-screen').style.display = 'none';
+  document.getElementById('progress').style.width = ((step + 1) / STEPS.length * 100) + '%';
+  window.scrollTo(0, 0);
+}
+
+function answer(step, passed) {
+  results[step] = passed;
+
+  if (passed) {
+    document.getElementById('fb-' + step + '-fail').style.display = 'none';
+    const lastStep = STEPS.length - 1;
+    if (step < lastStep) {
+      goNext(step + 1);
+    } else {
+      showResults();
+    }
+  } else {
+    document.getElementById('fb-' + step + '-fail').style.display = 'block';
+    document.getElementById('next-' + step).style.display = 'inline-block';
+  }
+}
+
+function recheck(step) {
+  results[step] = null;
+  document.getElementById('fb-' + step + '-fail').style.display = 'none';
+  document.getElementById('next-' + step).style.display = 'none';
+  window.scrollTo(0, 0);
+}
+
+function showResults() {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('results-screen').style.display = 'block';
+  document.getElementById('progress').style.width = '100%';
+
+  const list = document.getElementById('results-list');
+  list.innerHTML = '';
+  let allPass = true;
+
+  STEPS.forEach((name, i) => {
+    const passed = results[i];
+    if (!passed) allPass = false;
+    const li = document.createElement('li');
+    li.innerHTML = `<span class="icon">${passed ? '<span style="color:#4ade80;">&#10004;</span>' : '<span style="color:#f87171;">&#10008;</span>'}</span> ${name}`;
+    list.appendChild(li);
+  });
+
+  const summary = document.getElementById('result-summary');
+  if (allPass) {
+    summary.className = 'result-summary all-pass';
+    summary.textContent = 'All checks passed. Ready for sign-out.';
+  } else {
+    summary.className = 'result-summary has-fail';
+    summary.textContent = 'Some checks did not pass. See details below.';
+  }
+
+  const now = new Date();
+  document.getElementById('result-meta').textContent =
+    now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) +
+    ' at ' + now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+  window.scrollTo(0, 0);
+}
+
+function restart() {
+  results.fill(null);
+  document.querySelectorAll('.feedback').forEach(f => f.style.display = 'none');
+  document.querySelectorAll('.btn-next').forEach(b => b.style.display = 'none');
+  document.getElementById('results-screen').style.display = 'none';
+  goNext(0);
+}
+
+(function() {
+  const strip = document.getElementById('gray-strip');
+  // 18 gray values spaced at uniform L* (CIELAB lightness) intervals, per TG18-LN
+  const vals = [0, 19, 31, 43, 56, 69, 83, 97, 112, 126, 141, 157, 173, 189, 205, 221, 238, 255];
+  vals.forEach(val => {
+    const div = document.createElement('div');
+    div.style.background = `rgb(${val},${val},${val})`;
+    strip.appendChild(div);
+  });
+})();
+
+function drawSimpleSharpness() {
+  const canvas = document.getElementById('simple-sharp');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.fillStyle = '#808080';
+  ctx.fillRect(0, 0, W, H);
+
+  const spacings = [1, 2, 3, 4, 6];
+  let x = 20;
+
+  ctx.fillStyle = '#fff';
+  ctx.font = '13px sans-serif';
+
+  spacings.forEach(sp => {
+    const groupW = 24 * sp;
+    for (let i = 0; i < 24; i++) {
+      ctx.fillStyle = (i % 2 === 0) ? '#000' : '#fff';
+      ctx.fillRect(x + i * sp, 10, sp, 100);
+    }
+    ctx.fillStyle = '#fff';
+    ctx.fillText(sp + 'px', x + groupW / 2 - 10, 130);
+    x += groupW + 30;
+  });
+
+  let y = 10;
+  const hx = x + 10;
+  ctx.fillStyle = '#fff';
+  ctx.font = '11px sans-serif';
+  ctx.fillText('H', hx + 2, 130);
+  for (let i = 0; i < 24; i++) {
+    ctx.fillStyle = (i % 2 === 0) ? '#000' : '#fff';
+    ctx.fillRect(hx, y + i * 4, 60, 4);
+  }
+}
+</script>
+</body>
+</html>

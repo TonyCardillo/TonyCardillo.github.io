@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PathCal - entmoot.io</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="stylesheet" href="../css/style.css">
+    <meta name="description" content="Anthony Cardillo, MD - Informatics, AI, Digital Pathology">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="../index.html" class="logo">entmoot<span class="accent-green">.io</span></a>
+                <ul>
+                    <li><a href="../index.html" class="">Home</a></li>
+                    <li><a href="../about.html" class="">Resume</a></li>
+                    <li><a href="../projects.html" class="is-active" aria-current="page">Projects</a></li>
+                    <li><a href="../blog/index.html" class="">Blog</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            
+    <article>
+      <h1>PathCal</h1>
+      <div class="project-tech">
+        <span class="tech-tag">Clinical</span><span class="tech-tag">Digital Pathology</span>
+      </div>
+      <div class="blog-content">
+        <h2>Overview</h2>
+<p>A monitor calibration tool for pathologists performing digital sign-out.</p>
+<h2>Problem</h2>
+<ul>
+<li>Digital pathology sign-out requires monitors that accurately render subtle tissue differences, but most labs lack a quick, standardized QC check</li>
+<li>Existing solutions require hardware colorimeters or vendor-specific software installs</li>
+</ul>
+<h2>Solution</h2>
+<p>Two modes: a 1-minute <strong>Quick Check</strong> wizard (4 pass/fail tests with remediation guidance) and an <strong>Advanced Tools</strong> page with DICOM GSDF grayscale ramps, CIEDE2000-calibrated color discrimination patches, Landolt-C sharpness patterns, luminance uniformity fields, and an SMPTE test pattern.</p>
+<h2>Details</h2>
+<ul>
+<li>18-step grayscale ramp at uniform CIELAB lightness intervals (TG18-LN approximation)</li>
+<li>Low-contrast detection at 3 ΔE00 and 1 ΔE00 thresholds</li>
+<li>Stain-specific color patches for H&amp;E, DAB, PAS, Trichrome, and other common histological stains</li>
+<li>Printable QC checklist</li>
+</ul>
+<p><a href="monitor-calibration/index.html">Launch Quick Check →</a></p>
+<p><a href="monitor-calibration/advanced.html">Launch Advanced Tools →</a></p>
+
+      </div>
+      
+      <p style="margin-top: var(--space-12);"><a href="../projects.html">← Back to Projects</a></p>
+    </article>
+  
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Anthony Cardillo, MD &nbsp;·&nbsp; built with care</p>
+        </div>
+    </footer>
+</body>
+</html>
